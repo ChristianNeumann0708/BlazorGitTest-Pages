@@ -1,26 +1,46 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="utf-8" >
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" >
-    <title>writeRight</title>
-
-    <!-- Basis-Stile -->
-    <link rel="stylesheet" href="css/app.css" >
-
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="manifest.webmanifest" >
-
-    <!-- Favicon / Icons können wir später einbauen -->
+  <meta charset="UTF-8" >
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" >
+  <title>Worttrainer</title>
+  <link rel="stylesheet" href="css/styles.css" >
+  <script type="module" src="js/app.js" defer></script>
 </head>
 <body>
-    <div id="app">
-        <!-- Hier wird später die gesamte App dynamisch gerendert -->
-        <p>writeRight startet gleich…</p>
+  <h1>Worttrainer</h1>
+
+  <div class="trainer-layout">
+    <!-- Linke Spalte: Wortliste -->
+    <div class="trainer-wordlist">
+      <h4>Wortliste</h4>
+      <ul id="word-list"></ul>
     </div>
 
-    <div id="error"></div>
+    <!-- Rechte Spalte: Trainer-Inhalt -->
+    <div class="trainer-main">
+      <input type="text" id="input-new" placeholder="Wort eingeben (Enter)" >
 
-    <script src="js/app.js" type="module"></script>
+      <div class="word-display" id="word-display">
+        <span>Bitte ein Wort auswählen oder eingeben.</span>
+      </div>
+
+      <input type="text" id="input-falsch" placeholder="Falsch geschrieben (Enter)" >
+
+      <div class="trainer-buttons">
+        <button id="btn-correct" type="button" class="btn correct">Richtig</button>
+        <button id="btn-wrong" type="button" class="btn wrong">Falsch</button>
+        <button id="btn-delete" type="button" class="btn delete">Löschen</button>
+      </div>
+
+      <div class="navigation">
+        <button id="btn-prev" type="button">← Zurück</button>
+        <button id="btn-next" type="button">Weiter →</button>
+      </div>
+
+      <div class="stats" id="stats">Richtig: 0 | Falsch: 0</div>
+      <div class="wrong-variants" id="wrong-variants"></div>
+    </div>
+  </div>
 </body>
 </html>
