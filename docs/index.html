@@ -1,111 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="de">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>WordTrainer.Pwa</title>
-    <!--<base href="/" />-->
-    <!--Einfach mal schreiben-->
-    <base href="/BlazorGitTest-Pages/">
-    <link href="_framework/dotnet.i1yogki1pg.js" rel="preload" as="script" fetchpriority="high" crossorigin="anonymous" />
-    <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="css/app.css" />
-    <link rel="icon" type="image/png" href="favicon.png" />
-    <link href="WordTrainer.Pwa.styles.css" rel="stylesheet" />
-    <link href="manifest.webmanifest" rel="manifest" />
-    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
-    <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <!--<script type="importmap">{
-  "imports": {
-    "./_framework/blazor.webassembly.js": "./_framework/blazor.webassembly.66stpp682q.js",
-    "./_framework/dotnet.js": "./_framework/dotnet.i1yogki1pg.js",
-    "./_framework/dotnet.native.js": "./_framework/dotnet.native.cs8mcre4gh.js",
-    "./_framework/dotnet.runtime.js": "./_framework/dotnet.runtime.0j6ezsi0n0.js"
-  },
-  "scopes": {},
-  "integrity": {
-    "./_framework/blazor.webassembly.66stpp682q.js": "sha256-3lCWrko3zwspV40aQhs2S/IMkRSarnHRKIdkHhuXIBA=",
-    "./_framework/blazor.webassembly.js": "sha256-3lCWrko3zwspV40aQhs2S/IMkRSarnHRKIdkHhuXIBA=",
-    "./_framework/dotnet.i1yogki1pg.js": "sha256-VgI33mvO3NoANtxFB1sQhkspKXg5ykOd7zKtFaYgSv4=",
-    "./_framework/dotnet.js": "sha256-VgI33mvO3NoANtxFB1sQhkspKXg5ykOd7zKtFaYgSv4=",
-    "./_framework/dotnet.native.cs8mcre4gh.js": "sha256-/I3SDHIle7heAxlUGBrgxax+lkKyWyRLBVEJmTHJSCs=",
-    "./_framework/dotnet.native.js": "sha256-/I3SDHIle7heAxlUGBrgxax+lkKyWyRLBVEJmTHJSCs=",
-    "./_framework/dotnet.runtime.0j6ezsi0n0.js": "sha256-jCsbbdXoVd1zzGc0fQT2sz4mKuv0ANdurPVGo5Sc2jg=",
-    "./_framework/dotnet.runtime.js": "sha256-jCsbbdXoVd1zzGc0fQT2sz4mKuv0ANdurPVGo5Sc2jg="
-  }
-}</script>-->
+    <meta charset="utf-8" >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" >
+    <title>writeRight</title>
+
+    <!-- Basis-Stile -->
+    <link rel="stylesheet" href="css/app.css" >
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.webmanifest" >
+
+    <!-- Favicon / Icons können wir später einbauen -->
 </head>
-
 <body>
-    <!--<div id="app">
-        <svg class="loading-progress">
-            <circle r="40%" cx="50%" cy="50%" />
-            <circle r="40%" cx="50%" cy="50%" />
-        </svg>
-        <div class="loading-progress-text"></div>
-    </div>-->
-    <div id="app"></div>
-
-
-    <div id="blazor-error-ui">
-        An unhandled error has occurred.
-        <a href="." class="reload">Reload</a>
-        <span class="dismiss">🗙</span>
+    <div id="app">
+        <!-- Hier wird später die gesamte App dynamisch gerendert -->
+        <p>writeRight startet gleich…</p>
     </div>
-    <script src="_framework/blazor.webassembly.66stpp682q.js"></script>
-    <script>navigator.serviceWorker.register('service-worker.js', { updateViaCache: 'none' });</script>
 
-    <script>
-        window.downloadJson = (filename, content) => {
-            const blob = new Blob([content], { type: "application/json" });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = filename;
-            link.click();
-            URL.revokeObjectURL(link.href);
-        };
-    </script>
+    <div id="error"></div>
 
-    <script>
-        window.indexedBackup = {
-            save: async (dbName, storeName, json) => {
-                const db = await new Promise((resolve, reject) => {
-                    const request = indexedDB.open(dbName, 1);
-                    request.onupgradeneeded = () => {
-                        const db = request.result;
-                        if (!db.objectStoreNames.contains(storeName)) {
-                            db.createObjectStore(storeName);
-                        }
-                    };
-                    request.onsuccess = () => resolve(request.result);
-                    request.onerror = () => reject(request.error);
-                });
-
-                const tx = db.transaction(storeName, "readwrite");
-                tx.objectStore(storeName).put(json, "backup");
-            },
-
-            load: async (dbName, storeName) => {
-                return await new Promise((resolve, reject) => {
-                    const request = indexedDB.open(dbName, 1);
-                    request.onsuccess = () => {
-                        const db = request.result;
-                        const tx = db.transaction(storeName, "readonly");
-                        const store = tx.objectStore(storeName);
-                        const getReq = store.get("backup");
-
-                        getReq.onsuccess = () => resolve(getReq.result || null);
-                        getReq.onerror = () => reject(getReq.error);
-                    };
-                    request.onerror = () => reject(request.error);
-                });
-            }
-        };
-    </script>
-
-
+    <script src="js/app.js" type="module"></script>
 </body>
-
 </html>
