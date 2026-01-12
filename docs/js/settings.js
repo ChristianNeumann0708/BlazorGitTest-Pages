@@ -4,7 +4,6 @@ const WORDS_KEY = "words";
 // Einstellungen laden
 // ------------------------------
 export function loadSettings() {
-  // Einstellungen laden
   const saved = localStorage.getItem("settings");
   if (saved) {
     try {
@@ -18,7 +17,9 @@ export function loadSettings() {
     }
   }
 
+  // ------------------------------
   // Restore-Elemente holen
+  // ------------------------------
   const restoreInput = document.getElementById("restoreFile");
   const restoreButton = document.getElementById("restoreButton");
 
@@ -31,15 +32,13 @@ export function loadSettings() {
     return;
   }
 
-  // Button erst anzeigen, wenn eine Datei ausgewählt wurde
   restoreInput.onchange = () => {
     const hasFile = restoreInput.files && restoreInput.files.length > 0;
     restoreButton.style.display = hasFile ? "block" : "none";
     console.log("Datei ausgewählt:", hasFile);
   };
 
-  // Restore starten, wenn Button geklickt wird
-    restoreButton.onclick = () => restoreBackup({ target: restoreInput });
+  restoreButton.onclick = () => restoreBackup({ target: restoreInput });
 
   console.log("loadSettings() erfolgreich ausgeführt.");
 }

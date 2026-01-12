@@ -7,6 +7,12 @@ let sessionCorrect = 0;
 let sessionWrong = 0;
 let sessionTotal = 0;
 
+let lastWord = null;
+let lastIndex = -1;
+
+let autoDeleteEnabled = false;
+let autoDeleteThreshold = 10;
+
 
 // ------------------------------
 // Globale Variablen
@@ -107,6 +113,26 @@ function selectWord(wort) {
 function markCorrect() {
   if (!currentWord) return;
   currentWord.richtigGeschrieben();
+  console.log("anzRichtig:", currentWord.anzRichtig);
+  console.log("Threshold:", autoDeleteThreshold);
+  console.log("Enabled:", autoDeleteEnabled);
+
+  // ------------------------------
+  // Automatisches Löschen
+  // ------------------------------
+if (autoDeleteEnabled && currentWord.anzRichtig >= autoDeleteThreshold) {
+    console.log("Wort automatisch gelöscht:", currentWord.text);
+
+    // Wort aus der Liste entfernen
+    wortListe.splice(currentIndex, 1);
+    save();
+
+    // Sofort weiter zum nächsten Wort
+    nextWord();
+    renderList();
+    return; // WICHTIG: Rest der Funktion nicht mehr ausführen
+  }
+
   save();
   sessionCorrect++;
   //sessionTotal++;
@@ -153,16 +179,25 @@ function deleteCurrent() {
 // Navigation
 // ------------------------------
 function prevWord() {
-  if (wortListe.length === 0) return;
+  if (!lastWord) return; // kein Zurück möglich
 
-  currentIndex = (currentIndex - 1 + wortListe.length) % wortListe.length;
-  currentWord = wortListe[currentIndex];
+  currentWord = lastWord;
+  currentIndex = lastIndex;
+
   renderCurrent();
   renderList();
+
+  // Zurück nur einmal möglich → danach deaktivieren
+  lastWord = null;
+  lastIndex = -1;
 }
 
 function nextWord() {
   if (wortListe.length === 0) return;
+
+  // letztes Wort merken für Zurück
+lastWord = currentWord;
+lastIndex = currentIndex;
 
   // SESSION: neues Wort → Gesamtzähler +1
   sessionTotal++; 
@@ -281,7 +316,7 @@ function getWeightedWord(list) {
 // Start
 // ------------------------------
 load();
-
+loadAutoDeleteSettings(); 
 startTimer();
 
 function startTimer() {
@@ -297,4 +332,22 @@ function startTimer() {
     document.getElementById("session-timer").textContent = `Zeit: ${mm}:${ss}`;
   }, 1000);
 }
+
+function loadAutoDeleteSettings() {
+  const saved = localStorage.getItem("settings");
+  if (!saved) return;
+
+  try {
+    const settings = JSON.parse(saved);
+    autoDeleteEnabled = !!settings.autoDeleteEnabled;
+    autoDeleteThreshold = parseInt(settings.autoDeleteThreshold) || 10;
+    console.log("AutoDelete Settings geladen:", {
+      autoDeleteEnabled,
+      autoDeleteThreshold
+    });
+  } catch (err) {
+    console.warn("Konnte AutoDelete Settings nicht lesen:", err);
+  }
+}
+
 
