@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8" >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" >
+    <title>Einstellungen – WriteRight</title>
+    <link rel="stylesheet" href="css/styles.css" >
+</head>
+
+<body>
+<div class="layout">
+    <div id="main-menu"></div>
+
+    <div class="content">
+        <h1>Einstellungen</h1>
+
+        <div class="settings-container">
+
+            <!-- Auto Delete -->
+            <div class="inline-checkbox">
+                <input type="checkbox" id="autoDeleteEnabled" >
+                <span>Automatisches Löschen aktivieren</span>
+            </div>
+
+            <label>
+                Schwelle für automatisches Löschen:
+                <input type="number" id="autoDeleteThreshold" min="1" >
+            </label>
+
+            <div class="buttons">
+                <button id="saveSettings" type="button">Speichern</button>
+            </div>
+
+            <hr >
+
+            <!-- Backup -->
+            <h4>Backup</h4>
+            <div class="buttons">
+                <button id="downloadBackup" type="button">Backup herunterladen</button>
+            </div>
+
+            <!-- Restore -->
+            <h4>Wiederherstellen</h4>
+            <input type="file" id="restoreFile" >
+
+            <hr >
+
+            <div id="status" class="status-message" style="display:none;"></div>
+        </div>
+    </div>
+</div>
+
+  <!-- Menü automatisch laden  -->
+<script type="module">
+  import { loadMenu } from "./js/menu.js";
+  import { loadSettings } from "./js/settings.js";
+
+  loadMenu();
+  loadSettings();
+</script>
+
+</body>
+</html>

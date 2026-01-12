@@ -268,6 +268,8 @@ input[type="number"] {
 .settings-container h4 {
   margin-top: 2rem;
   margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+  color: var(--sidebar-bg);
 }
 
 .settings-container label {
@@ -275,6 +277,7 @@ input[type="number"] {
   flex-direction: column;
   margin-bottom: 1.2rem;
   font-weight: 500;
+  color: var(--text);
 }
 
 .settings-container input[type="checkbox"] {
@@ -288,6 +291,7 @@ input[type="number"] {
   margin-top: 0.4rem;
   border-radius: 6px;
   border: 1px solid #ccc;
+  font-size: 1rem;
 }
 
 .settings-container input[type="file"] {
@@ -317,10 +321,17 @@ input[type="number"] {
   font-size: 1rem;
   background: var(--accent);
   color: white;
+  transition: filter 0.15s ease;
+}
+
+.settings-container button:hover {
+  filter: brightness(1.1);
 }
 
 .settings-container hr {
   margin: 2rem 0;
+  border: none;
+  border-top: 1px solid #ddd;
 }
 
 .settings-container .inline-checkbox {
@@ -329,9 +340,21 @@ input[type="number"] {
   gap: 0.5rem;
   margin-bottom: 1rem;
   font-weight: 500;
+  color: var(--text);
 }
 
 .settings-container .inline-checkbox input[type="checkbox"] {
   width: 18px;
   height: 18px;
+}
+
+/* Statusmeldung */
+.status-message {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #e3f2fd;
+  border-left: 4px solid var(--accent);
+  border-radius: 6px;
+  font-weight: 500;
+  color: #0a3d62;
 }
