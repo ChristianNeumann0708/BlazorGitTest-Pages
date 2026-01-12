@@ -53,6 +53,7 @@ export function saveSettings() {
   };
 
   localStorage.setItem("settings", JSON.stringify(settings));
+
   showStatus("Einstellungen gespeichert.");
 }
 
@@ -133,3 +134,21 @@ function showStatus(msg) {
   el.textContent = msg;
   el.style.display = "block";
 }
+
+// ------------------------------
+// Buttons verbinden
+// ------------------------------
+const saveBtn = document.getElementById("saveSettings");
+if (saveBtn) {
+  saveBtn.onclick = () => {
+    saveSettings();
+  };
+}
+
+const downloadBtn = document.getElementById("downloadBackup");
+if (downloadBtn) {
+  downloadBtn.onclick = () => {
+    downloadBackup();
+  };
+}
+
