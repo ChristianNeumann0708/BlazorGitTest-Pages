@@ -4,24 +4,44 @@ const WORDS_KEY = "words";
 // Einstellungen laden
 // ------------------------------
 export function loadSettings() {
+  // Einstellungen laden
   const saved = localStorage.getItem("settings");
-  if (!saved) return;
-
-  try {
-    const settings = JSON.parse(saved);
-    document.getElementById("autoDeleteEnabled").checked = settings.autoDeleteEnabled ?? false;
-    document.getElementById("autoDeleteThreshold").value = settings.autoDeleteThreshold ?? 10;
-  } catch {
-    console.warn("Fehler beim Laden der Einstellungen.");
+  if (saved) {
+    try {
+      const settings = JSON.parse(saved);
+      document.getElementById("autoDeleteEnabled").checked =
+        settings.autoDeleteEnabled ?? false;
+      document.getElementById("autoDeleteThreshold").value =
+        settings.autoDeleteThreshold ?? 10;
+    } catch {
+      console.warn("Fehler beim Laden der Einstellungen.");
+    }
   }
 
-  // Restore-Event binden
+  // Restore-Elemente holen
   const restoreInput = document.getElementById("restoreFile");
-  if (restoreInput) {
-    restoreInput.onchange = restoreBackup;
-  } else {
+  const restoreButton = document.getElementById("restoreButton");
+
+  if (!restoreInput) {
     console.error("Restore-Input nicht gefunden!");
+    return;
   }
+  if (!restoreButton) {
+    console.error("Restore-Button nicht gefunden!");
+    return;
+  }
+
+  // Button erst anzeigen, wenn eine Datei ausgewählt wurde
+  restoreInput.onchange = () => {
+    const hasFile = restoreInput.files && restoreInput.files.length > 0;
+    restoreButton.style.display = hasFile ? "block" : "none";
+    console.log("Datei ausgewählt:", hasFile);
+  };
+
+  // Restore starten, wenn Button geklickt wird
+    restoreButton.onclick = () => restoreBackup({ target: restoreInput });
+
+  console.log("loadSettings() erfolgreich ausgeführt.");
 }
 
 // ------------------------------

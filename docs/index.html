@@ -26,31 +26,40 @@
           <ul id="word-list"></ul>
         </div>
 
-        <!-- Trainer-Inhalt -->
-        <div class="trainer-main">
-          <input type="text" id="input-new" placeholder="Wort eingeben (Enter)">
+<!-- Trainer-Inhalt -->
+<div class="trainer-main">
+  <input type="text" id="input-new" placeholder="Wort eingeben (Enter)">
 
-          <div class="word-display" id="word-display">
-            <span>Bitte ein Wort auswählen oder eingeben.</span>
-          </div>
+  <div class="word-display" id="word-display">
+    <span>Bitte ein Wort auswählen oder eingeben.</span>
+  </div>
 
-          <input type="text" id="input-falsch" placeholder="Falsch geschrieben (Enter)">
+  <input type="text" id="input-falsch" placeholder="Falsch geschrieben (Enter)">
 
-          <div class="trainer-buttons">
-            <button id="btn-correct" type="button" class="btn correct">Richtig</button>
-            <button id="btn-wrong" type="button" class="btn wrong">Falsch</button>
-            <button id="btn-delete" type="button" class="btn delete">Löschen</button>
-          </div>
+  <div class="trainer-buttons">
+    <button id="btn-correct" type="button" class="btn correct">Richtig</button>
+    <button id="btn-wrong" type="button" class="btn wrong">Falsch</button>
+    <button id="btn-delete" type="button" class="btn delete">Löschen</button>
+  </div>
 
-          <div class="navigation">
-            <button id="btn-prev" type="button">← Zurück</button>
-            <button id="btn-next" type="button">Weiter →</button>
-          </div>
+  <div class="navigation">
+    <button id="btn-prev" type="button">← Zurück</button>
+    <button id="btn-next" type="button">Weiter →</button>
+  </div>
 
-          <div class="stats" id="stats">Richtig: 0 | Falsch: 0</div>
-          <div class="wrong-variants" id="wrong-variants"></div>
-        </div>
+  <div class="stats" id="stats">Richtig: 0 | Falsch: 0</div>
+  <div class="wrong-variants" id="wrong-variants"></div>
+</div>
 
+<!-- Session-Info unten rechts -->
+<div id="session-info">
+  <div id="session-timer">Zeit: 0s</div>
+  <div id="session-stats">
+    <div id="session-correct">Richtig: 0</div>
+    <div id="session-wrong">Falsch: 0</div>
+    <div id="session-total">Gesamt: 0</div>
+  </div>
+</div>
       </div>
     </div>
 

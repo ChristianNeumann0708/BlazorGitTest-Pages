@@ -1,4 +1,4 @@
-const STORAGE_KEY = "wortliste";
+const STORAGE_KEY = "words";
 
 export const Storage = {
   load() {

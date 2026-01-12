@@ -1,6 +1,13 @@
 import { Storage } from './storage.js';
 import { Wort } from './wort.js';
 
+let sessionSeconds = 0;
+let timerInterval = null;
+let sessionCorrect = 0;
+let sessionWrong = 0;
+let sessionTotal = 0;
+
+
 // ------------------------------
 // Globale Variablen
 // ------------------------------
@@ -74,6 +81,11 @@ function handleFalsch() {
   if (!falsch) return;
 
   currentWord.falschGeschrieben(falsch);
+
+  // SESSION-STATISTIK 
+  sessionWrong++; 
+  updateSessionStats();
+
   inputFalsch.value = '';
   save();
   renderStats();
@@ -86,6 +98,7 @@ function selectWord(wort) {
   currentWord = wort;
   currentIndex = wortListe.indexOf(wort);
   renderCurrent();
+  renderList();
 }
 
 // ------------------------------
@@ -95,14 +108,22 @@ function markCorrect() {
   if (!currentWord) return;
   currentWord.richtigGeschrieben();
   save();
+  sessionCorrect++;
+  //sessionTotal++;
+  updateSessionStats();
   nextWord();
+  renderList();
 }
 
 function markWrong() {
   if (!currentWord) return;
   currentWord.falschGeschrieben('');
   save();
+  sessionWrong++; 
+  //sessionTotal++;
+  updateSessionStats();
   nextWord();
+  renderList();
 }
 
 function deleteCurrent() {
@@ -111,6 +132,11 @@ function deleteCurrent() {
   wortListe.splice(currentIndex, 1);
 
   if (wortListe.length > 0) {
+
+    // SESSION: neues Wort → Gesamtzähler +1
+    //sessionTotal++; 
+    updateSessionStats();
+
     currentWord = getNextWord(wortListe);
     currentIndex = wortListe.indexOf(currentWord);
   } else {
@@ -132,14 +158,20 @@ function prevWord() {
   currentIndex = (currentIndex - 1 + wortListe.length) % wortListe.length;
   currentWord = wortListe[currentIndex];
   renderCurrent();
+  renderList();
 }
 
 function nextWord() {
   if (wortListe.length === 0) return;
 
+  // SESSION: neues Wort → Gesamtzähler +1
+  sessionTotal++; 
+  updateSessionStats();
+
   currentWord = getNextWord(wortListe);
   currentIndex = wortListe.indexOf(currentWord);
   renderCurrent();
+  renderList();
 }
 
 // ------------------------------
@@ -156,6 +188,9 @@ function renderList() {
       li.className = 'wordlist-item' + (w === currentWord ? ' active' : '');
       li.onclick = () => selectWord(w);
       listEl.appendChild(li);
+      // if (w === currentWord) {
+      // li.scrollIntoView({ behavior: "smooth", block: "center" });
+      // }
     });
 }
 
@@ -188,6 +223,13 @@ function renderStats() {
     variants.innerHTML = '';
   }
 }
+
+  function updateSessionStats() {
+  document.getElementById("session-correct").textContent = `Richtig: ${sessionCorrect}`;
+  document.getElementById("session-wrong").textContent = `Falsch: ${sessionWrong}`;
+  document.getElementById("session-total").textContent = `Gesamt: ${sessionTotal}`;
+}
+
 
 // ------------------------------
 // Speicher
@@ -239,3 +281,20 @@ function getWeightedWord(list) {
 // Start
 // ------------------------------
 load();
+
+startTimer();
+
+function startTimer() {
+  timerInterval = setInterval(() => {
+    sessionSeconds++;
+
+    const minutes = Math.floor(sessionSeconds / 60);
+    const seconds = sessionSeconds % 60;
+
+    const mm = String(minutes).padStart(2, "0");
+    const ss = String(seconds).padStart(2, "0");
+
+    document.getElementById("session-timer").textContent = `Zeit: ${mm}:${ss}`;
+  }, 1000);
+}
+
