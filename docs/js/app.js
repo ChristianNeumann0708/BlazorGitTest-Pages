@@ -13,6 +13,8 @@ let lastIndex = -1;
 let autoDeleteEnabled = false;
 let autoDeleteThreshold = 10;
 
+let sortByMistakes;
+
 
 // ------------------------------
 // Globale Variablen
@@ -70,6 +72,8 @@ function handleAdd() {
     const neu = new Wort(text);
     wortListe.push(neu);
     save();
+    autoSaveToIndexedDB();
+
     selectWord(neu);
   }
 
@@ -94,6 +98,8 @@ function handleFalsch() {
 
   inputFalsch.value = '';
   save();
+  autoSaveToIndexedDB();
+
   renderStats();
 }
 
@@ -126,6 +132,7 @@ if (autoDeleteEnabled && currentWord.anzRichtig >= autoDeleteThreshold) {
     // Wort aus der Liste entfernen
     wortListe.splice(currentIndex, 1);
     save();
+    autoSaveToIndexedDB();
 
     // Sofort weiter zum nächsten Wort
     nextWord();
@@ -134,6 +141,8 @@ if (autoDeleteEnabled && currentWord.anzRichtig >= autoDeleteThreshold) {
   }
 
   save();
+  autoSaveToIndexedDB();
+
   sessionCorrect++;
   //sessionTotal++;
   updateSessionStats();
@@ -145,6 +154,8 @@ function markWrong() {
   if (!currentWord) return;
   currentWord.falschGeschrieben('');
   save();
+  autoSaveToIndexedDB();
+
   sessionWrong++; 
   //sessionTotal++;
   updateSessionStats();
@@ -171,6 +182,8 @@ function deleteCurrent() {
   }
 
   save();
+  autoSaveToIndexedDB();
+
   renderList();
   renderCurrent();
 }
@@ -215,17 +228,26 @@ lastIndex = currentIndex;
 function renderList() {
   listEl.innerHTML = '';
 
+  // Sortierung abhängig vom Toggle
   wortListe
-    .sort((a, b) => a.text.localeCompare(b.text))
+    .sort((a, b) => {
+      if (sortByMistakes) {
+        return b.anzFalsch - a.anzFalsch; // Fehlerhäufigkeit
+      }
+      return a.text.localeCompare(b.text); // Alphabetisch
+    })
     .forEach(w => {
       const li = document.createElement('li');
-      li.textContent = w.text;
+
+      // Anzeige abhängig vom Sortiermodus
+      li.textContent = sortByMistakes
+        ? `${w.text} (${w.anzFalsch}× falsch)`
+        : w.text;
+
       li.className = 'wordlist-item' + (w === currentWord ? ' active' : '');
       li.onclick = () => selectWord(w);
+
       listEl.appendChild(li);
-      // if (w === currentWord) {
-      // li.scrollIntoView({ behavior: "smooth", block: "center" });
-      // }
     });
 }
 
@@ -273,18 +295,27 @@ function save() {
   Storage.save(wortListe);
 }
 
-function load() {
-  const raw = Storage.load();
-  wortListe = raw.map(obj => Wort.fromJSON(obj));
+let autoSaveTimeout = null;
 
-  if (wortListe.length > 0) {
-    currentWord = getNextWord(wortListe);
-    currentIndex = wortListe.indexOf(currentWord);
+function autoSaveToIndexedDB() {
+  // Debounce: nur 1x alle 2 Sekunden speichern
+  if (autoSaveTimeout) {
+    clearTimeout(autoSaveTimeout);
   }
 
-  renderList();
-  renderCurrent();
+  autoSaveTimeout = setTimeout(async () => {
+    try {
+      const json = localStorage.getItem("words");
+      if (!json) return;
+
+      await indexedBackup.save("WriteRightDB", "BackupStore", json);
+      console.log("Backup gespeichert:", new Date().toLocaleTimeString());
+    } catch (err) {
+      console.error("Fehler beim automatischen Backup:", err);
+    }
+  }, 2000);
 }
+
 
 // ------------------------------
 // Gewichtete Auswahl (wie Blazor)
@@ -312,12 +343,106 @@ function getWeightedWord(list) {
   return weighted[index];
 }
 
+// async load mit defensiven Checks
+async function load() {
+  // 1) Versuche zuerst die schnellen localStorage-Daten zu laden
+  let raw = Storage.load(); // evtl. [] oder null
+
+  // Normalisiere raw
+  if (!raw) raw = [];
+
+  // 2) Wenn localStorage leer ist, versuche IndexedDB (async)
+  if (!Array.isArray(raw) || raw.length === 0) {
+    try {
+      const json = await window.indexedBackup.load("WordTrainerBackup", "Words");
+      if (json && json.length > 0) {
+        try {
+          raw = JSON.parse(json);
+          if (!Array.isArray(raw)) raw = [];
+          // optional: cache wieder in localStorage
+          Storage.save(raw);
+          showToast("Backup aus lokalem Speicher geladen");
+        } catch (parseErr) {
+          console.warn("IndexedDB Backup konnte nicht geparst werden", parseErr);
+          raw = [];
+        }
+      } else {
+        raw = []; // keine Daten vorhanden
+      }
+    } catch (err) {
+      console.warn("IndexedDB Restore fehlgeschlagen", err);
+      raw = []; // defensiv weiterarbeiten
+    }
+  }
+
+  // 3) Normal weiter mit den geladenen Rohdaten
+  wortListe = raw.map(obj => Wort.fromJSON(obj));
+
+  if (wortListe.length > 0) {
+    currentWord = getNextWord(wortListe);
+    currentIndex = wortListe.indexOf(currentWord);
+  } else {
+    currentWord = null;
+    currentIndex = -1;
+  }
+
+  // renderList();
+  // renderCurrent();
+}
+
+async function restoreIfLocalEmpty() {
+  const local = localStorage.getItem("words");
+
+  // Normalfall: localStorage hat Daten → nichts tun
+  if (local && local !== "[]") {
+    return;
+  }
+
+  // Fehlerfall: localStorage ist leer → Backup laden
+  const backup = await indexedBackup.load("WriteRightDB", "BackupStore");
+
+  if (backup) {
+    localStorage.setItem("words", JSON.stringify(backup));
+  }
+
+  // Worst Case: backup ist auch leer → App startet leer (korrekt)
+}
+
+
 // ------------------------------
 // Start
 // ------------------------------
-load();
-loadAutoDeleteSettings(); 
-startTimer();
+(async () => {
+  await restoreIfLocalEmpty();
+
+  await load();
+  loadAutoDeleteSettings();
+  startTimer();
+
+  // sortByMistakes aus Settings laden
+  const settings = Storage.loadSettings();
+  sortByMistakes = !!settings.sortByMistakes;
+  renderList();
+
+  const toggle = document.getElementById("sortByMistakes");
+  if (toggle) {
+    toggle.checked = sortByMistakes;
+
+    toggle.addEventListener("change", () => {
+      sortByMistakes = toggle.checked;
+
+      // Settings frisch laden, damit nichts überschrieben wird
+      const newSettings = Storage.loadSettings();
+      Storage.saveSettings({
+        ...newSettings,
+        sortByMistakes
+      });
+
+      renderList();
+    });
+  }
+})();
+
 
 function startTimer() {
   timerInterval = setInterval(() => {
@@ -334,20 +459,15 @@ function startTimer() {
 }
 
 function loadAutoDeleteSettings() {
-  const saved = localStorage.getItem("settings");
-  if (!saved) return;
+  const settings = Storage.loadSettings();
 
-  try {
-    const settings = JSON.parse(saved);
-    autoDeleteEnabled = !!settings.autoDeleteEnabled;
-    autoDeleteThreshold = parseInt(settings.autoDeleteThreshold) || 10;
-    console.log("AutoDelete Settings geladen:", {
-      autoDeleteEnabled,
-      autoDeleteThreshold
-    });
-  } catch (err) {
-    console.warn("Konnte AutoDelete Settings nicht lesen:", err);
-  }
+  autoDeleteEnabled = !!settings.autoDeleteEnabled;
+  autoDeleteThreshold = parseInt(settings.autoDeleteThreshold) || 10;
+
+  console.log("AutoDelete Settings geladen:", {
+    autoDeleteEnabled,
+    autoDeleteThreshold
+  });
 }
 
 

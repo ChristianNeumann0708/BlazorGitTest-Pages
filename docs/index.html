@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Worttrainer</title>
   <link rel="stylesheet" href="css/styles.css">
+  <script type="module" src="js/indexedBackup.js"></script>
   <script type="module" src="js/app.js" defer></script>
 </head>
 <body>
@@ -21,10 +22,20 @@
       <div class="trainer-layout">
 
         <!-- Wortliste -->
-        <div class="trainer-wordlist">
-          <h4>Wortliste</h4>
-          <ul id="word-list"></ul>
-        </div>
+    <div class="trainer-wordlist">
+     <h4>Wortliste</h4>
+
+   <!-- ⭐ HIER kommt der Schalter hin -->
+   <div class="sort-toggle">
+    <label class="switch">
+      <input type="checkbox" id="sortByMistakes">
+      <span class="slider"></span>
+    </label>
+    <span>Fehlerhäufigkeit</span>
+  </div>
+
+  <ul id="word-list"></ul>
+</div>
 
 <!-- Trainer-Inhalt -->
 <div class="trainer-main">
@@ -42,10 +53,10 @@
     <button id="btn-delete" type="button" class="btn delete">Löschen</button>
   </div>
 
-  <div class="navigation">
-    <button id="btn-prev" type="button">← Zurück</button>
-    <button id="btn-next" type="button">Weiter →</button>
-  </div>
+<div class="navigation">
+  <button id="btn-prev" type="button" class="btn nav">← Zurück</button>
+  <button id="btn-next" type="button" class="btn nav">Weiter →</button>
+</div>
 
   <div class="stats" id="stats">Richtig: 0 | Falsch: 0</div>
   <div class="wrong-variants" id="wrong-variants"></div>

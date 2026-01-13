@@ -1,24 +1,39 @@
+// ganz oben in js/settings.js
+import { Storage } from "./storage.js"; // oder "./js/storage.js" je nach Ordnerstruktur
+
 const WORDS_KEY = "words";
 
 // ------------------------------
 // Einstellungen laden
 // ------------------------------
-export function loadSettings() {
-  const saved = localStorage.getItem("settings");
-  if (saved) {
-    try {
-      const settings = JSON.parse(saved);
-      document.getElementById("autoDeleteEnabled").checked =
-        settings.autoDeleteEnabled ?? false;
-      document.getElementById("autoDeleteThreshold").value =
-        settings.autoDeleteThreshold ?? 10;
-    } catch {
-      console.warn("Fehler beim Laden der Einstellungen.");
-    }
+function loadSettings() {
+  // Alle Settings aus dem gemeinsamen Speicher laden
+  const settings = Storage.loadSettings();
+
+  // ------------------------------
+  // Sortier-Einstellung
+  // ------------------------------
+  const sortToggle = document.getElementById("sortByMistakes");
+  if (sortToggle) {
+    sortToggle.checked = settings.sortByMistakes ?? false;
   }
 
   // ------------------------------
-  // Restore-Elemente holen
+  // AutoDelete-Einstellungen
+  // ------------------------------
+  const autoDeleteEnabledEl = document.getElementById("autoDeleteEnabled");
+  const autoDeleteThresholdEl = document.getElementById("autoDeleteThreshold");
+
+  if (autoDeleteEnabledEl) {
+    autoDeleteEnabledEl.checked = settings.autoDeleteEnabled ?? false;
+  }
+
+  if (autoDeleteThresholdEl) {
+    autoDeleteThresholdEl.value = settings.autoDeleteThreshold ?? 10;
+  }
+
+  // ------------------------------
+  // Restore-Elemente
   // ------------------------------
   const restoreInput = document.getElementById("restoreFile");
   const restoreButton = document.getElementById("restoreButton");
@@ -46,13 +61,19 @@ export function loadSettings() {
 // ------------------------------
 // Einstellungen speichern
 // ------------------------------
-export function saveSettings() {
-  const settings = {
+function saveSettings() {
+  // Aktuelle Settings laden, damit nichts überschrieben wird
+  const settings = Storage.loadSettings();
+
+  // Neue Werte aus dem UI übernehmen
+  const updated = {
+    ...settings,
     autoDeleteEnabled: document.getElementById("autoDeleteEnabled").checked,
     autoDeleteThreshold: parseInt(document.getElementById("autoDeleteThreshold").value) || 10
   };
 
-  localStorage.setItem("settings", JSON.stringify(settings));
+  // Persistieren
+  Storage.saveSettings(updated);
 
   showStatus("Einstellungen gespeichert.");
 }
@@ -135,20 +156,19 @@ function showStatus(msg) {
   el.style.display = "block";
 }
 
-// ------------------------------
 // Buttons verbinden
-// ------------------------------
-const saveBtn = document.getElementById("saveSettings");
-if (saveBtn) {
-  saveBtn.onclick = () => {
-    saveSettings();
-  };
-}
+document.addEventListener("DOMContentLoaded", () => {
+  const saveBtn = document.getElementById("saveSettings");
+  if (saveBtn) {
+    saveBtn.onclick = () => saveSettings();
+  }
 
-const downloadBtn = document.getElementById("downloadBackup");
-if (downloadBtn) {
-  downloadBtn.onclick = () => {
-    downloadBackup();
-  };
-}
+  const downloadBtn = document.getElementById("downloadBackup");
+  if (downloadBtn) {
+    downloadBtn.onclick = () => downloadBackup();
+  }
 
+  loadSettings();
+});
+
+loadSettings();
