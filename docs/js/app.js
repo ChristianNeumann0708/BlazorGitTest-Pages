@@ -386,8 +386,8 @@ async function load() {
     currentIndex = -1;
   }
 
-  // renderList();
-  // renderCurrent();
+  renderList();
+  renderCurrent();
 }
 
 async function restoreIfLocalEmpty() {
