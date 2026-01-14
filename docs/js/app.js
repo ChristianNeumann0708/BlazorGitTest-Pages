@@ -261,6 +261,7 @@ function renderCurrent() {
 
   display.textContent = currentWord.text;
   renderStats();
+  inputFalsch.focus();
 }
 
 function renderStats() {
