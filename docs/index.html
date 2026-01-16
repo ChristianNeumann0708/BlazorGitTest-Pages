@@ -7,8 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" >
     <title>Worttrainer</title>
     <link rel="stylesheet" href="css/styles.css" >
-    <script type="module" src="js/indexedBackup.js"></script>
+    <script type="module" src="js/indexedBackup.js" defer></script>
     <script type="module" src="js/app.js" defer></script>
+    <script type="module" src="js/timer.js" defer></script>
   </head>
   <body>
     <div class="layout">
@@ -86,6 +87,7 @@
               <div id="session-wrong">Falsch: 0</div>
               <div id="session-total">Gesamt: 0</div>
             </div>
+            <button id="btn-reset" type="button" class="btn reset">Reset</button>
           </div>
         </div>
       </div>

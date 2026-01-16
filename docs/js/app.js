@@ -1,11 +1,9 @@
 import { Storage } from './storage.js';
 import { Wort } from './wort.js';
+import { addCorrect, addWrong, addTotal } from "./timer.js";
+import { resetTimer } from "./timer.js";
 
-let sessionSeconds = 0;
-let timerInterval = null;
-let sessionCorrect = 0;
-let sessionWrong = 0;
-let sessionTotal = 0;
+
 
 let lastWord = null;
 let lastIndex = -1;
@@ -39,15 +37,19 @@ const btnWrong = document.getElementById('btn-wrong');
 const btnDelete = document.getElementById('btn-delete');
 const btnPrev = document.getElementById('btn-prev');
 const btnNext = document.getElementById('btn-next');
+const btnReset = document.getElementById("btn-reset");
 
 // ------------------------------
 // Event-Handler
 // ------------------------------
-btnCorrect.onclick = markCorrect;
-btnWrong.onclick = markWrong;
-btnDelete.onclick = deleteCurrent;
-btnPrev.onclick = prevWord;
-btnNext.onclick = nextWord;
+btnCorrect.addEventListener("click", markCorrect);
+btnWrong.addEventListener("click", markWrong);
+btnDelete.addEventListener("click", deleteCurrent);
+btnPrev.addEventListener("click", prevWord);
+btnNext.addEventListener("click", nextWord);
+//const btnReset = document.getElementById("btn-reset");
+btnReset.addEventListener("click", resetTimer);
+
 
 inputNeu.addEventListener('keydown', e => {
   if (e.key === 'Enter') handleAdd();
@@ -93,9 +95,8 @@ function handleFalsch() {
   currentWord.falschGeschrieben(falsch);
 
   // SESSION-STATISTIK 
-  sessionWrong++; 
-  updateSessionStats();
-
+  addWrong();
+  addTotal();
   inputFalsch.value = '';
   save();
   autoSaveToIndexedDB();
@@ -139,13 +140,10 @@ if (autoDeleteEnabled && currentWord.anzRichtig >= autoDeleteThreshold) {
     renderList();
     return; // WICHTIG: Rest der Funktion nicht mehr ausführen
   }
-
   save();
   autoSaveToIndexedDB();
-
-  sessionCorrect++;
-  //sessionTotal++;
-  updateSessionStats();
+  addCorrect();
+  addTotal();
   nextWord();
   renderList();
 }
@@ -156,9 +154,8 @@ function markWrong() {
   save();
   autoSaveToIndexedDB();
 
-  sessionWrong++; 
-  //sessionTotal++;
-  updateSessionStats();
+  addWrong();
+  addTotal();
   nextWord();
   renderList();
 }
@@ -170,10 +167,7 @@ function deleteCurrent() {
 
   if (wortListe.length > 0) {
 
-    // SESSION: neues Wort → Gesamtzähler +1
-    //sessionTotal++; 
-    updateSessionStats();
-
+    //addTotal();
     currentWord = getNextWord(wortListe);
     currentIndex = wortListe.indexOf(currentWord);
   } else {
@@ -209,12 +203,8 @@ function nextWord() {
   if (wortListe.length === 0) return;
 
   // letztes Wort merken für Zurück
-lastWord = currentWord;
-lastIndex = currentIndex;
-
-  // SESSION: neues Wort → Gesamtzähler +1
-  sessionTotal++; 
-  updateSessionStats();
+  lastWord = currentWord;
+  lastIndex = currentIndex;
 
   currentWord = getNextWord(wortListe);
   currentIndex = wortListe.indexOf(currentWord);
@@ -280,12 +270,6 @@ function renderStats() {
   } else {
     variants.innerHTML = '';
   }
-}
-
-  function updateSessionStats() {
-  document.getElementById("session-correct").textContent = `Richtig: ${sessionCorrect}`;
-  document.getElementById("session-wrong").textContent = `Falsch: ${sessionWrong}`;
-  document.getElementById("session-total").textContent = `Gesamt: ${sessionTotal}`;
 }
 
 
@@ -418,7 +402,6 @@ async function restoreIfLocalEmpty() {
 
   await load();
   loadAutoDeleteSettings();
-  startTimer();
 
   // sortByMistakes aus Settings laden
   const settings = Storage.loadSettings();
@@ -444,15 +427,48 @@ async function restoreIfLocalEmpty() {
   }
 })();
 
+//const btnReset = document.getElementById("btn-reset");
+if (btnReset) {
+  btnReset.onclick = resetTimer;
+}
+
 // ------------------------------
 // Service Worker Registrierung
 // ------------------------------
+// if ("serviceWorker" in navigator) {
+//   window.addEventListener("load", () => {
+//     navigator.serviceWorker
+//       .register("./service-worker.js")
+//       .then(reg => {
+//         console.log("Service Worker registriert:", reg.scope);
+//       })
+//       .catch(err => {
+//         console.error("Service Worker Registrierung fehlgeschlagen:", err);
+//       });
+//   });
+// }
+
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker
       .register("./service-worker.js")
       .then(reg => {
         console.log("Service Worker registriert:", reg.scope);
+
+        // sofort nach neuer Version suchen
+        reg.update();
+
+        // optional: auf Update reagieren (z. B. neu laden, wenn aktiv)
+        reg.addEventListener('updatefound', () => {
+          const newSW = reg.installing;
+          newSW.addEventListener('statechange', () => {
+            if (newSW.state === 'activated') {
+              console.log('Neue Service Worker Version aktiviert');
+              // optional: Seite neu laden, falls du sofort die neuen Assets willst
+              // window.location.reload();
+            }
+          });
+        });
       })
       .catch(err => {
         console.error("Service Worker Registrierung fehlgeschlagen:", err);
@@ -460,21 +476,6 @@ if ("serviceWorker" in navigator) {
   });
 }
 
-
-
-function startTimer() {
-  timerInterval = setInterval(() => {
-    sessionSeconds++;
-
-    const minutes = Math.floor(sessionSeconds / 60);
-    const seconds = sessionSeconds % 60;
-
-    const mm = String(minutes).padStart(2, "0");
-    const ss = String(seconds).padStart(2, "0");
-
-    document.getElementById("session-timer").textContent = `Zeit: ${mm}:${ss}`;
-  }, 1000);
-}
 
 function loadAutoDeleteSettings() {
   const settings = Storage.loadSettings();
