@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+
 /* === Basisfarben === */
 :root {
   --bg: #d9e0e7;
@@ -105,7 +108,7 @@ html, body {
   flex-shrink: 0;
 } */
 .trainer-wordlist {
-  width: 220px;
+  width: 260px;
   background:white;
   padding: 1rem;
   border-radius: 12px;
@@ -124,6 +127,7 @@ html, body {
   cursor: pointer;
   padding: 0.2rem 0.4rem;
   border-radius: 4px;
+  font-size: 1.1rem; /* oder z.B. 18px */
 }
 
 .wordlist-item:hover {
@@ -489,7 +493,7 @@ button.btn.reset {
   width: 140px;           /* beibehalten oder anpassen */
   box-sizing: border-box;
   padding: 8px;
-  font-family: monospace;
+  font-family: 'Inter', sans-serif;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -536,4 +540,44 @@ button.btn.reset {
 #btn-reset:hover,
 .btn.reset:hover {
   background-color: #d4d4d4;
+}
+
+.stats span {
+  font-weight: 600;
+}
+
+.stats .pos {
+  color: #2e7d32; /* Grün */
+}
+
+.stats .neg {
+  color: #c62828; /* Rot */
+}
+
+.stats .neutral {
+  color: #555; /* Grau */
+}
+
+.inline-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.inline-checkbox input[type="checkbox"] {
+    transform: scale(1.2);
+}
+
+#autoDeleteThreshold {
+  width: 60px;   /* oder 40px, 50px – je nach Geschmack */
+  text-align: right; /* optional: Zahl rechtsbündig */
+}
+
+.auto-delete-row {
+  font-weight: 600; /* oder 500, 700 – je nach Geschmack */
+}
+
+.settings-hint {
+  font-weight: 600; /* oder 500, 700 – je nach Geschmack */
 }

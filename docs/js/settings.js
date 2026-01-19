@@ -1,86 +1,102 @@
-// ganz oben in js/settings.js
-import { Storage } from "./storage.js"; // oder "./js/storage.js" je nach Ordnerstruktur
+import { Storage } from "./storage.js";
 
 const WORDS_KEY = "words";
 
-// ------------------------------
+// ------------------------------------------------------
 // Einstellungen laden
-// ------------------------------
+// ------------------------------------------------------
 function loadSettings() {
-  // Alle Settings aus dem gemeinsamen Speicher laden
   const settings = Storage.loadSettings();
 
-  // ------------------------------
-  // Sortier-Einstellung
-  // ------------------------------
+  // Sortier-Einstellung (Trainer-Seite)
   const sortToggle = document.getElementById("sortByMistakes");
   if (sortToggle) {
     sortToggle.checked = settings.sortByMistakes ?? false;
   }
 
-  // ------------------------------
-  // AutoDelete-Einstellungen
-  // ------------------------------
+  // Fehlerbilanz-Umschalter (NEU)
+  const fehlerbilanzToggle = document.getElementById("useFehlerbilanz");
+  if (fehlerbilanzToggle) {
+    fehlerbilanzToggle.checked = settings.useFehlerbilanz ?? false;
+  }
+
+  // AutoDelete
   const autoDeleteEnabledEl = document.getElementById("autoDeleteEnabled");
   const autoDeleteThresholdEl = document.getElementById("autoDeleteThreshold");
 
   if (autoDeleteEnabledEl) {
     autoDeleteEnabledEl.checked = settings.autoDeleteEnabled ?? false;
+    autoDeleteEnabledEl.addEventListener("change", () => {
+      const s = Storage.loadSettings();
+      Storage.saveSettings({
+        ...s,
+        autoDeleteEnabled: autoDeleteEnabledEl.checked
+      });
+    });
   }
 
   if (autoDeleteThresholdEl) {
     autoDeleteThresholdEl.value = settings.autoDeleteThreshold ?? 10;
+    autoDeleteThresholdEl.addEventListener("input", () => {
+      const s = Storage.loadSettings();
+      Storage.saveSettings({
+        ...s,
+        autoDeleteThreshold: parseInt(autoDeleteThresholdEl.value) || 10
+      });
+    });
   }
 
-  // ------------------------------
-  // Restore-Elemente
-  // ------------------------------
+  const tabletModeEnabledEl = document.getElementById("tabletModeEnabled");
+
+  if (tabletModeEnabledEl) {
+    tabletModeEnabledEl.checked = settings.tabletModeEnabled ?? false;
+
+    tabletModeEnabledEl.addEventListener("change", () => {
+      const s = Storage.loadSettings();
+      Storage.saveSettings({
+        ...s,
+        tabletModeEnabled: tabletModeEnabledEl.checked
+      });
+    });
+  }
+
+
+  // Restore
   const restoreInput = document.getElementById("restoreFile");
   const restoreButton = document.getElementById("restoreButton");
 
-  if (!restoreInput) {
-    console.error("Restore-Input nicht gefunden!");
-    return;
-  }
-  if (!restoreButton) {
-    console.error("Restore-Button nicht gefunden!");
-    return;
-  }
+  if (restoreInput && restoreButton) {
+    restoreInput.onchange = () => {
+      const hasFile = restoreInput.files && restoreInput.files.length > 0;
+      restoreButton.style.display = hasFile ? "block" : "none";
+    };
 
-  restoreInput.onchange = () => {
-    const hasFile = restoreInput.files && restoreInput.files.length > 0;
-    restoreButton.style.display = hasFile ? "block" : "none";
-    console.log("Datei ausgewählt:", hasFile);
-  };
-
-  restoreButton.onclick = () => restoreBackup({ target: restoreInput });
+    restoreButton.onclick = () => restoreBackup({ target: restoreInput });
+  }
 
   console.log("loadSettings() erfolgreich ausgeführt.");
 }
 
-// ------------------------------
-// Einstellungen speichern
-// ------------------------------
+// ------------------------------------------------------
+// Einstellungen speichern (nur für AutoDelete)
+// ------------------------------------------------------
 function saveSettings() {
-  // Aktuelle Settings laden, damit nichts überschrieben wird
   const settings = Storage.loadSettings();
 
-  // Neue Werte aus dem UI übernehmen
   const updated = {
     ...settings,
     autoDeleteEnabled: document.getElementById("autoDeleteEnabled").checked,
-    autoDeleteThreshold: parseInt(document.getElementById("autoDeleteThreshold").value) || 10
+    autoDeleteThreshold:
+      parseInt(document.getElementById("autoDeleteThreshold").value) || 10
   };
 
-  // Persistieren
   Storage.saveSettings(updated);
-
   showStatus("Einstellungen gespeichert.");
 }
 
-// ------------------------------
+// ------------------------------------------------------
 // Backup herunterladen
-// ------------------------------
+// ------------------------------------------------------
 export function downloadBackup() {
   const raw = localStorage.getItem(WORDS_KEY);
   if (!raw) {
@@ -100,9 +116,9 @@ export function downloadBackup() {
   showStatus("Backup wurde heruntergeladen.");
 }
 
-// ------------------------------
+// ------------------------------------------------------
 // Backup wiederherstellen
-// ------------------------------
+// ------------------------------------------------------
 export function restoreBackup(event) {
   const file = event.target.files[0];
   if (!file) {
@@ -116,24 +132,22 @@ export function restoreBackup(event) {
       const json = reader.result;
       const oldList = JSON.parse(json);
 
-      console.log("Restore gestartet. Gelesene Daten:", oldList);
+      const newList = oldList
+        .map(obj => {
+          if (!obj) return null;
 
-      const newList = oldList.map(obj => {
-        if (!obj) return null;
+          const text = obj.text ?? obj.Text ?? obj.Name ?? null;
+          if (!text) return null;
 
-        const text = obj.text ?? obj.Text ?? obj.Name ?? null;
-        if (!text) {
-          console.warn("Ungültiger Eintrag:", obj);
-          return null;
-        }
-
-        return {
-          text,
-          anzRichtig: obj.anzRichtig ?? obj.AnzRichtigGeschrieben ?? 0,
-          anzFalsch: obj.anzFalsch ?? obj.AnzFalschGeschrieben ?? 0,
-          falscheVarianten: obj.falscheVarianten ?? obj.DictFalscheWoerter ?? {}
-        };
-      }).filter(x => x !== null);
+          return {
+            text,
+            anzRichtig: obj.anzRichtig ?? obj.AnzRichtigGeschrieben ?? 0,
+            anzFalsch: obj.anzFalsch ?? obj.AnzFalschGeschrieben ?? 0,
+            falscheVarianten:
+              obj.falscheVarianten ?? obj.DictFalscheWoerter ?? {}
+          };
+        })
+        .filter(x => x !== null);
 
       localStorage.setItem(WORDS_KEY, JSON.stringify(newList));
       showStatus(`Backup wiederhergestellt. (${newList.length} Wörter)`);
@@ -146,9 +160,9 @@ export function restoreBackup(event) {
   reader.readAsText(file);
 }
 
-// ------------------------------
+// ------------------------------------------------------
 // Statusmeldung anzeigen
-// ------------------------------
+// ------------------------------------------------------
 function showStatus(msg) {
   const el = document.getElementById("status");
   if (!el) return;
@@ -156,19 +170,34 @@ function showStatus(msg) {
   el.style.display = "block";
 }
 
-// Buttons verbinden
+// ------------------------------------------------------
+// DOMContentLoaded – Buttons verbinden & Settings laden
+// ------------------------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
+  // Speichern-Button
   const saveBtn = document.getElementById("saveSettings");
   if (saveBtn) {
     saveBtn.onclick = () => saveSettings();
   }
 
+  // Backup-Button
   const downloadBtn = document.getElementById("downloadBackup");
   if (downloadBtn) {
     downloadBtn.onclick = () => downloadBackup();
   }
 
+  // Fehlerbilanz-Umschalter (automatisch speichern)
+  const fehlerbilanzToggle = document.getElementById("useFehlerbilanz");
+  if (fehlerbilanzToggle) {
+    fehlerbilanzToggle.addEventListener("change", () => {
+      const s = Storage.loadSettings();
+      Storage.saveSettings({
+        ...s,
+        useFehlerbilanz: fehlerbilanzToggle.checked
+      });
+    });
+  }
+
+  // Einstellungen initial laden
   loadSettings();
 });
-
-loadSettings();

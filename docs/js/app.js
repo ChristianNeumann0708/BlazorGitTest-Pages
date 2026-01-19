@@ -215,6 +215,31 @@ function nextWord() {
 // ------------------------------
 // Rendering
 // ------------------------------
+function getScoreForWord(w) {
+  const settings = Storage.loadSettings();
+
+  if (settings.useFehlerbilanz) {
+    // Fehlerbilanz: mehr falsch → höherer Score
+    return w.anzFalsch - w.anzRichtig;
+  }
+  // Standard: absolute Fehler
+  return w.anzFalsch;
+}
+
+function getListLabel(w) {
+  const settings = Storage.loadSettings();
+
+  if (settings.useFehlerbilanz) {
+    const diff = w.anzFalsch - w.anzRichtig;
+    const sign = diff > 0 ? "+" : "";
+    return `${w.text} (Δ ${sign}${diff})`;
+  }
+
+  // Standard: absolute Fehler
+  return `${w.text} (${w.anzFalsch}× falsch)`;
+}
+
+
 function renderList() {
   listEl.innerHTML = '';
 
@@ -222,17 +247,19 @@ function renderList() {
   wortListe
     .sort((a, b) => {
       if (sortByMistakes) {
-        return b.anzFalsch - a.anzFalsch; // Fehlerhäufigkeit
+        return getScoreForWord(b) - getScoreForWord(a);
       }
-      return a.text.localeCompare(b.text); // Alphabetisch
+      return a.text.localeCompare(b.text);
     })
+    
     .forEach(w => {
       const li = document.createElement('li');
 
       // Anzeige abhängig vom Sortiermodus
       li.textContent = sortByMistakes
-        ? `${w.text} (${w.anzFalsch}× falsch)`
+        ? getListLabel(w)
         : w.text;
+
 
       li.className = 'wordlist-item' + (w === currentWord ? ' active' : '');
       li.onclick = () => selectWord(w);
@@ -251,14 +278,80 @@ function renderCurrent() {
 
   display.textContent = currentWord.text;
   renderStats();
-  inputFalsch.focus();
+
+  const settings = Storage.loadSettings();
+  if (!settings.tabletModeEnabled) {
+    inputFalsch.focus();
+  }
 }
 
+// function renderStats() {
+//   stats.textContent = `Richtig: ${currentWord.anzRichtig} | Falsch: ${currentWord.anzFalsch}`;
+
+//   const dict = currentWord.falscheVarianten;
+
+//   if (Object.keys(dict).length > 0) {
+//     variants.innerHTML =
+//       '<h4>Falsch geschriebene Varianten</h4><ul>' +
+//       Object.entries(dict)
+//         .sort((a, b) => b[1] - a[1])
+//         .map(([k, v]) => `<li>${k} — ${v}</li>`)
+//         .join('') +
+//       '</ul>';
+//   } else {
+//     variants.innerHTML = '';
+//   }
+// }
+
+// function renderStats() {
+//   // Wort-Stats aktualisieren
+//   document.getElementById("stats-correct").textContent = currentWord.anzRichtig;
+//   document.getElementById("stats-wrong").textContent = currentWord.anzFalsch;
+//   document.getElementById("stats-diff").textContent =
+//     currentWord.anzFalsch - currentWord.anzRichtig;
+
+//   // Falsch geschriebene Varianten
+//   const dict = currentWord.falscheVarianten;
+
+//   if (Object.keys(dict).length > 0) {
+//     variants.innerHTML =
+//       '<h4>Falsch geschriebene Varianten</h4><ul>' +
+//       Object.entries(dict)
+//         .sort((a, b) => b[1] - a[1])
+//         .map(([k, v]) => `<li>${k} — ${v}</li>`)
+//         .join('') +
+//       '</ul>';
+//   } else {
+//     variants.innerHTML = '';
+//   }
+// }
+
 function renderStats() {
-  stats.textContent = `Richtig: ${currentWord.anzRichtig} | Falsch: ${currentWord.anzFalsch}`;
+  // Werte setzen
+  const correct = currentWord.anzRichtig;
+  const wrong = currentWord.anzFalsch;
+  const diff = wrong - correct;
 
+  document.getElementById("stats-correct").textContent = correct;
+  document.getElementById("stats-wrong").textContent = wrong;
+
+  const diffEl = document.getElementById("stats-diff");
+  diffEl.textContent = diff;
+
+  // Klassen zurücksetzen
+  diffEl.classList.remove("pos", "neg", "neutral");
+
+  // Farbe setzen
+  if (diff > 0) {
+    diffEl.classList.add("neg");      // mehr Fehler → rot
+  } else if (diff < 0) {
+    diffEl.classList.add("pos");      // mehr richtig → grün
+  } else {
+    diffEl.classList.add("neutral");  // ausgeglichen → grau
+  }
+
+  // Varianten wie gehabt
   const dict = currentWord.falscheVarianten;
-
   if (Object.keys(dict).length > 0) {
     variants.innerHTML =
       '<h4>Falsch geschriebene Varianten</h4><ul>' +
@@ -320,13 +413,18 @@ function getNextWord(list) {
 
 function getWeightedWord(list) {
   const weighted = list.flatMap(w => {
-    const weight = Math.max(1, 1 + w.anzFalsch - Math.floor(w.anzRichtig / 2));
+    const score = getScoreForWord(w);
+
+    // Gewichtung: Score darf nie negativ sein
+    const weight = Math.max(1, 1 + score);
+
     return Array(weight).fill(w);
   });
 
   const index = Math.floor(Math.random() * weighted.length);
   return weighted[index];
 }
+
 
 // async load mit defensiven Checks
 async function load() {
