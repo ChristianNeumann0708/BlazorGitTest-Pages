@@ -60,6 +60,18 @@ function loadSettings() {
     });
   }
 
+  // Ganze Wortliste löschen
+  const deleteWordsBtn = document.getElementById("deleteWordsBtn");
+
+  if (deleteWordsBtn) {
+    deleteWordsBtn.addEventListener("click", async () => {
+      if (confirm("Möchtest du wirklich die gesamte Wortliste löschen?")) {
+        await Storage.clearWordsEverywhere();
+        console.log("DEBUG: clearWordsEverywhere() abgeschlossen");
+        alert("Wortliste wurde gelöscht.");
+      }
+    });
+  }
 
   // Restore
   const restoreInput = document.getElementById("restoreFile");
@@ -72,6 +84,17 @@ function loadSettings() {
     };
 
     restoreButton.onclick = () => restoreBackup({ target: restoreInput });
+  }
+
+  const resetStatsBtn = document.getElementById("resetStatsBtn");
+
+  if (resetStatsBtn) {
+    resetStatsBtn.addEventListener("click", () => {
+      if (confirm("Möchtest du wirklich alle Statistikwerte zurücksetzen?")) {
+        Storage.resetWordStats();
+        alert("Statistik wurde zurückgesetzt.");
+      }
+    });
   }
 
   console.log("loadSettings() erfolgreich ausgeführt.");

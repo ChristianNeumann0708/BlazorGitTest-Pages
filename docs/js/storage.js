@@ -25,5 +25,25 @@ export const Storage = {
   clearAll() {
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(SETTINGS_KEY);
+  },
+
+  clearWordsEverywhere() {
+  // localStorage löschen
+    localStorage.removeItem(STORAGE_KEY);
+
+    // IndexedDB löschen
+    return indexedBackup.clear("WriteRightDB", "WriteRightStore");
+  },
+
+  resetWordStats() {
+    const words = Storage.load();
+
+    const resetWords = words.map(w => ({
+      ...w,
+      anzRichtig: 0,
+      anzFalsch: 0,
+      falscheVarianten: {}
+    }));
+    Storage.save(resetWords);
   }
 };

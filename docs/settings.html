@@ -13,7 +13,7 @@
     <div id="main-menu"></div>
 
     <div class="content">
-        <h1>Einstellungen</h1>
+        <!-- <h1>Einstellungen</h1> -->
 
         <div class="settings-container">
             <!-- Fehler-Modus -->
@@ -69,10 +69,32 @@
                 Verhindert die Bildschirmtastatur durch den Fokus auf das Eingabefeld
             </div>
 
+            <hr >
+
+            <h4>Statistik zurücksetzen</h4>
+            <div class="inline-checkbox">
+            <button id="resetStatsBtn" type="button">Statistik zurücksetzen</button>
+            </div>
+            <div class="settings-hint">
+                Setzt für alle Wörter die Werte für Richtig/Falsch und die Varianten zurück.
+            </div>
+
+            <hr >
+
+            <h4>Wortliste löschen</h4>
+            <div class="inline-checkbox">
+            <button id="deleteWordsBtn" type="button">Wortliste löschen</button>
+            </div>
+            <div class="settings-hint">
+            Löscht alle gespeicherten Wörter unwiderruflich.
+            </div>
+
 
         </div>
     </div>
 </div>
+
+<script src="./js/indexedBackup.js"></script>
 
 <script type="module">
   import { loadMenu } from "./js/menu.js";
