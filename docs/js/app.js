@@ -81,6 +81,7 @@ function handleAdd() {
 
   inputNeu.value = '';
   renderList();
+  updateWordCount(wortListe);
 }
 
 // ------------------------------
@@ -112,6 +113,7 @@ function selectWord(wort) {
   currentIndex = wortListe.indexOf(wort);
   renderCurrent();
   renderList();
+  updateWordCount(wortListe);
 }
 
 // ------------------------------
@@ -138,6 +140,7 @@ if (autoDeleteEnabled && currentWord.anzRichtig >= autoDeleteThreshold) {
     // Sofort weiter zum nächsten Wort
     nextWord();
     renderList();
+    updateWordCount(wortListe);
     return; // WICHTIG: Rest der Funktion nicht mehr ausführen
   }
   save();
@@ -146,6 +149,7 @@ if (autoDeleteEnabled && currentWord.anzRichtig >= autoDeleteThreshold) {
   addTotal();
   nextWord();
   renderList();
+  updateWordCount(wortListe);
 }
 
 function markWrong() {
@@ -158,6 +162,7 @@ function markWrong() {
   addTotal();
   nextWord();
   renderList();
+  updateWordCount(wortListe);
 }
 
 function deleteCurrent() {
@@ -179,6 +184,7 @@ function deleteCurrent() {
   autoSaveToIndexedDB();
 
   renderList();
+  updateWordCount(wortListe);
   renderCurrent();
 }
 
@@ -193,6 +199,7 @@ function prevWord() {
 
   renderCurrent();
   renderList();
+  updateWordCount(wortListe);
 
   // Zurück nur einmal möglich → danach deaktivieren
   lastWord = null;
@@ -210,6 +217,7 @@ function nextWord() {
   currentIndex = wortListe.indexOf(currentWord);
   renderCurrent();
   renderList();
+  updateWordCount(wortListe);
 }
 
 // ------------------------------
@@ -268,6 +276,15 @@ function renderList() {
     });
 }
 
+function updateWordCount(words) {
+  const el = document.getElementById("wordCount");
+  if (!el) return;
+
+  const count = words.length;
+  el.textContent = `– ${count} Wörter`;
+}
+
+
 function renderCurrent() {
   if (!currentWord) {
     display.innerHTML = '<span>Bitte ein Wort auswählen oder eingeben.</span>';
@@ -284,47 +301,6 @@ function renderCurrent() {
     inputFalsch.focus();
   }
 }
-
-// function renderStats() {
-//   stats.textContent = `Richtig: ${currentWord.anzRichtig} | Falsch: ${currentWord.anzFalsch}`;
-
-//   const dict = currentWord.falscheVarianten;
-
-//   if (Object.keys(dict).length > 0) {
-//     variants.innerHTML =
-//       '<h4>Falsch geschriebene Varianten</h4><ul>' +
-//       Object.entries(dict)
-//         .sort((a, b) => b[1] - a[1])
-//         .map(([k, v]) => `<li>${k} — ${v}</li>`)
-//         .join('') +
-//       '</ul>';
-//   } else {
-//     variants.innerHTML = '';
-//   }
-// }
-
-// function renderStats() {
-//   // Wort-Stats aktualisieren
-//   document.getElementById("stats-correct").textContent = currentWord.anzRichtig;
-//   document.getElementById("stats-wrong").textContent = currentWord.anzFalsch;
-//   document.getElementById("stats-diff").textContent =
-//     currentWord.anzFalsch - currentWord.anzRichtig;
-
-//   // Falsch geschriebene Varianten
-//   const dict = currentWord.falscheVarianten;
-
-//   if (Object.keys(dict).length > 0) {
-//     variants.innerHTML =
-//       '<h4>Falsch geschriebene Varianten</h4><ul>' +
-//       Object.entries(dict)
-//         .sort((a, b) => b[1] - a[1])
-//         .map(([k, v]) => `<li>${k} — ${v}</li>`)
-//         .join('') +
-//       '</ul>';
-//   } else {
-//     variants.innerHTML = '';
-//   }
-// }
 
 function renderStats() {
   // Werte setzen
@@ -470,7 +446,9 @@ async function load() {
   }
 
   renderList();
+  updateWordCount(wortListe);
   renderCurrent();
+  updateWordCount(wortListe);
 }
 
 async function restoreIfLocalEmpty() {
@@ -505,6 +483,7 @@ async function restoreIfLocalEmpty() {
   const settings = Storage.loadSettings();
   sortByMistakes = !!settings.sortByMistakes;
   renderList();
+  updateWordCount(wortListe);
 
   const toggle = document.getElementById("sortByMistakes");
   if (toggle) {
@@ -521,6 +500,7 @@ async function restoreIfLocalEmpty() {
       });
 
       renderList();
+      updateWordCount(wortListe);
     });
   }
 })();
