@@ -3,6 +3,20 @@ import { Wort } from './wort.js';
 import { addCorrect, addWrong, addTotal } from "./timer.js";
 import { resetTimer } from "./timer.js";
 
+// Service Worker Update Listener
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', event => {
+    if (event.data?.type === 'UPDATED') {
+      // Hinweis anzeigen
+      showUpdateToast();
+
+      // ⭐ Automatisches Reload nach kurzer Verzögerung
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    }
+  });
+}
 
 
 let lastWord = null;
@@ -339,6 +353,13 @@ function renderStats() {
   } else {
     variants.innerHTML = '';
   }
+}
+
+function showUpdateToast() {
+  const el = document.getElementById('updateToast');
+  if (!el) return;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2000);
 }
 
 
